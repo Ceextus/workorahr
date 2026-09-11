@@ -1,0 +1,319 @@
+@import "tailwindcss";
+
+/* The styleguide ships a Light/Dark toggle, so dark mode follows a class on
+   <html> rather than the OS setting. Tailwind 4 declares this in CSS, not in a
+   config file. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Design tokens — from the Workora styleguide.
+
+   Tailwind 4 has no tailwind.config.js. Tokens are declared here in @theme, and
+   each namespace generates its own utilities:
+
+     --color-*   ->  bg-primary, text-grey-600, border-error, ...
+     --text-*    ->  text-h1, text-body-md, ... (font-size + paired line-height)
+     --font-*    ->  font-sans
+
+   Add a token here and the utility exists everywhere. Nothing to regenerate.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* ── Typeface ──────────────────────────────────────────────────────────────
+     Manrope is loaded in app/layout.tsx via next/font/google, which self-hosts
+     it and exposes it as --font-manrope. Referencing that variable here is what
+     connects the two files. */
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+
+  /* ── Main ─────────────────────────────────────────────────────────────────── */
+
+  --color-primary: #27a376;
+  --color-secondary: #facc15;
+
+  /* ── Alerts ───────────────────────────────────────────────────────────────── */
+
+  --color-success: #22c55e;
+  --color-warning: #facc15;
+  --color-error: #f75555;
+
+  /* ── Greyscale ────────────────────────────────────────────────────────────────
+     Named `grey` deliberately, matching the styleguide. Tailwind's built-in
+     `gray` still exists, so `bg-grey-600` and `bg-gray-600` are different
+     colours — always reach for `grey`. */
+
+  --color-grey-50: #fafafa;
+  --color-grey-100: #f7fafc;
+  --color-grey-200: #edf2f7;
+  --color-grey-300: #e2e8f0;
+  --color-grey-400: #cbd5e0;
+  --color-grey-500: #a0aec0;
+  --color-grey-600: #718096;
+  --color-grey-700: #4a5568;
+  --color-grey-800: #2d3748;
+  --color-grey-900: #1a202c;
+
+  /* ── Additional ───────────────────────────────────────────────────────────── */
+
+  --color-orange: #fe964a;
+  --color-blue: #0062ff;
+  --color-purple: #8c62ff;
+
+  /* ── Headings ───────────────────────────────────────────────────────────────
+     All six are Bold (700) in the styleguide, so the weight is paired with the
+     size — `text-h1` carries both. Line heights are not specified in the
+     styleguide; these are tightened as the type scales up, which is the usual
+     convention. Worth confirming against the Figma file. */
+
+  --text-h1: 48px;
+  --text-h1--line-height: 1.15;
+  --text-h1--font-weight: 700;
+
+  --text-h2: 40px;
+  --text-h2--line-height: 1.2;
+  --text-h2--font-weight: 700;
+
+  --text-h3: 32px;
+  --text-h3--line-height: 1.25;
+  --text-h3--font-weight: 700;
+
+  --text-h4: 24px;
+  --text-h4--line-height: 1.33;
+  --text-h4--font-weight: 700;
+
+  --text-h5: 20px;
+  --text-h5--line-height: 1.4;
+  --text-h5--font-weight: 700;
+
+  --text-h6: 18px;
+  --text-h6--line-height: 1.44;
+  --text-h6--font-weight: 700;
+
+  /* ── Body ───────────────────────────────────────────────────────────────────
+     No weight is paired here: every body size ships in four weights, so the
+     weight stays a separate choice — `text-body-md font-medium`.
+
+     Note the styleguide's smallest two sizes use Extrabold rather than Bold as
+     their heaviest weight, which is why `font-extrabold` matters at 12px/10px. */
+
+  --text-body-xl: 18px;
+  --text-body-xl--line-height: 1.56;
+
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 1.5;
+
+  --text-body-md: 14px;
+  --text-body-md--line-height: 1.57;
+
+  --text-body-sm: 12px;
+  --text-body-sm--line-height: 1.5;
+
+  --text-body-xs: 10px;
+  --text-body-xs--line-height: 1.6;
+
+  /* ── Radii ──────────────────────────────────────────────────────────────────
+     Read off the styleguide screenshots rather than measured in Figma, so treat
+     these as close-but-unconfirmed. Inputs and buttons share one radius; cards
+     are softer; chips and toggles are fully round. */
+
+  --radius-field: 12px;
+  --radius-card: 20px;
+  --radius-panel: 28px;
+  --radius-pill: 9999px;
+
+  /* ── Elevation ──────────────────────────────────────────────────────────────
+     Cards separate from the page by lifting off it, not by drawing a line around
+     it. Both shadows are tinted with the ink colour rather than pure black, so
+     they read as depth instead of grime.
+
+     Two levels only. A third would stop meaning anything. */
+
+  --shadow-card: 0 1px 2px rgb(26 32 44 / 0.04), 0 8px 24px rgb(26 32 44 / 0.05);
+  --shadow-float: 0 2px 6px rgb(26 32 44 / 0.05), 0 18px 44px rgb(26 32 44 / 0.09);
+
+  /* ── Loading shimmer ────────────────────────────────────────────────────────
+     A highlight that sweeps left to right across a skeleton block. Nicer than a
+     plain opacity fade because the motion has a direction — it reads as "this is
+     arriving" rather than "this is blinking".
+
+     1.8s is deliberate. Much faster reads as agitated; much slower stops
+     registering as motion at all. */
+
+  --animate-shimmer: shimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Motion is decorative here; the grey block already says "loading". */
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-sweep {
+    display: none;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Semantic surfaces
+
+   The palette above is fixed — #27A376 is that green in either theme. These are
+   the tokens that MEAN something ("the page", "a card", "muted text") and so
+   have to change between light and dark.
+
+   Always build components from these, not from raw greys. `bg-surface-raised`
+   works in both themes; `bg-white` silently breaks in one of them.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Faintly green-tinted rather than neutral grey, so white cards lift off it. */
+  --surface: #f1f5f4;
+  --surface-raised: #ffffff;
+  --surface-sunk: #f4f7f6;
+  --border-subtle: #e8eeec;
+  --border-strong: #cbd5e0;
+  --text-strong: #1a202c;
+  --text-muted: #718096;
+  --text-subtle: #a0aec0;
+}
+
+.dark {
+  /* Deeper than the raised surface so the same lift reads in dark mode. */
+  --surface: #131923;
+  --surface-raised: #1e2635;
+  --surface-sunk: #262f40;
+  --border-subtle: #2c3648;
+  --border-strong: #718096;
+  --text-strong: #ffffff;
+  --text-muted: #cbd5e0;
+  --text-subtle: #a0aec0;
+}
+
+/* `@theme inline` points the utility at the variable itself rather than baking
+   in its value, which is what lets these flip when the .dark class toggles. A
+   plain @theme block would freeze them at their light-mode values. */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunk: var(--surface-sunk);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-text-strong: var(--text-strong);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Base
+   ───────────────────────────────────────────────────────────────────────────── */
+
+body {
+  background-color: var(--surface);
+  color: var(--text-strong);
+  /* Stops iOS inflating text in landscape without disabling user zoom. */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Mobile / WebView
+   This app is destined for a React Native WebView, so these are not niceties.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/*
+ * iOS Safari zooms the whole page when a text field smaller than 16px receives
+ * focus, and never zooms back out. Our fields are 14px by design.
+ *
+ * Forcing 16px below the `sm` breakpoint removes the trigger, which is the
+ * correct fix — the usual one, `maximum-scale=1`, works by disabling pinch-zoom
+ * for everyone, including people who need it.
+ */
+@media (max-width: 639px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Grey flash on tap in iOS/Android WebViews; :active states replace it. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * Momentum scrolling inside our own scroll containers, and no scroll-chaining
+ * to the WebView itself — without this, scrolling past the end of a list drags
+ * the whole native view.
+ */
+.scroll-area {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/*
+ * Thin, low-contrast scrollbars on our own scroll containers.
+ *
+ * The default Windows/Chrome scrollbar is a 17px light-grey slab, and with a
+ * scroll container per table, per tab strip, per panel, the page ends up looking
+ * fenced. These stay usable and stop competing with the content.
+ *
+ * Firefox honours `scrollbar-width`/`scrollbar-color`; WebKit needs the
+ * pseudo-elements. Both are declared so it looks the same either way.
+ */
+.scroll-area,
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.scroll-area::-webkit-scrollbar,
+.thin-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scroll-area::-webkit-scrollbar-track,
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-area::-webkit-scrollbar-thumb,
+.thin-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--border-strong);
+  border-radius: 9999px;
+}
+
+/*
+ * Scrollable, with no visible bar. Only for strips where swiping is the obvious
+ * affordance and a bar would be noise — filter tabs, chip rows.
+ *
+ * Never use it on a container whose scrollability is not otherwise obvious: a
+ * hidden scrollbar on a wide table is content nobody knows is there.
+ */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Room for the notch and the home indicator. Zero on everything else. */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-x {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
