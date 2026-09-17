@@ -3,6 +3,7 @@ import { api, asList } from "@/lib/api-client";
 import type {
   AttendanceFilters,
   AttendanceRecord,
+  AttendanceReportEntry,
   MonthlyReportQuery,
 } from "./types";
 
@@ -40,9 +41,12 @@ export const listAttendance = async (filters: AttendanceFilters = {}) =>
 /**
  * [HR/Admin] Monthly report.
  *
- * The response shape is NOT documented anywhere — the collection shows only the
- * two query params. Typed as records here because every sibling endpoint returns
- * them, but treat that as a guess until it is seen working.
+ * Returns one row per employee with their monthly tallies, NOT a list of
+ * individual attendance records — the two are easy to confuse because every
+ * sibling endpoint on this controller returns the latter.
  */
-export const getMonthlyReport = ({ year, month }: MonthlyReportQuery) =>
-  api.get<AttendanceRecord[]>("/attendance/report", { query: { year, month } });
+export const getMonthlyReport = async ({ year, month }: MonthlyReportQuery) =>
+  asList<AttendanceReportEntry>(
+    await api.get("/attendance/report", { query: { year, month } }),
+    "GET /attendance/report",
+  );

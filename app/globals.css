@@ -174,6 +174,13 @@
   /* Faintly green-tinted rather than neutral grey, so white cards lift off it. */
   --surface: #f1f5f4;
   --surface-raised: #ffffff;
+
+  /* Chart series — validated categorical steps for the light surface. */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
   --surface-sunk: #f4f7f6;
   --border-subtle: #e8eeec;
   --border-strong: #cbd5e0;
@@ -186,6 +193,13 @@
   /* Deeper than the raised surface so the same lift reads in dark mode. */
   --surface: #131923;
   --surface-raised: #1e2635;
+
+  /* Re-stepped for the dark surface, not lightened copies of the above. */
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
   --surface-sunk: #262f40;
   --border-subtle: #2c3648;
   --border-strong: #718096;

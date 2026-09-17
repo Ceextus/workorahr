@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AttendanceReport } from "@/features/attendance/components/attendance-report";
 import { AttendanceRoster } from "@/features/attendance/components/attendance-roster";
 import { CheckInCard } from "@/features/attendance/components/check-in-card";
 import { MyAttendance } from "@/features/attendance/components/my-attendance";
@@ -41,6 +42,18 @@ export default async function AttendancePage() {
             </p>
           </div>
           <AttendanceRoster />
+        </section>
+      ) : null}
+
+      {canSeeEveryone ? (
+        <section className="flex flex-col gap-4 border-t border-border-subtle pt-6">
+          <div>
+            <h2 className="text-h5 text-text-strong">Monthly report</h2>
+            <p className="mt-1 text-body-md text-text-muted">
+              How each person&rsquo;s recorded days break down, busiest first.
+            </p>
+          </div>
+          <AttendanceReport />
         </section>
       ) : null}
     </div>

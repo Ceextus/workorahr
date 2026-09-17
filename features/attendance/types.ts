@@ -31,3 +31,32 @@ export interface MonthlyReportQuery {
   /** 1-12. */
   month: number;
 }
+
+/**
+ * One row of GET /attendance/report — a per-employee monthly tally.
+ *
+ * Taken from the backend's AttendanceReportEntryResponse. The Postman
+ * collection documents only the two query params and never the response, so
+ * this was previously typed as AttendanceRecord[], which it is not.
+ */
+export interface AttendanceReportEntry {
+  employeeId: string;
+  employeeName: string | null;
+  presentDays: number;
+  absentDays: number;
+  lateDays: number;
+  halfDays: number;
+  onLeaveDays: number;
+  totalRecordedDays: number;
+}
+
+/** The five tallies, in the order they are stacked and legended. */
+export const ATTENDANCE_BANDS = [
+  { key: "presentDays", label: "Present" },
+  { key: "lateDays", label: "Late" },
+  { key: "halfDays", label: "Half day" },
+  { key: "onLeaveDays", label: "On leave" },
+  { key: "absentDays", label: "Absent" },
+] as const;
+
+export type AttendanceBandKey = (typeof ATTENDANCE_BANDS)[number]["key"];

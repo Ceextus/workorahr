@@ -7,9 +7,11 @@ import {
   ArrowUpRight,
   CalendarCheck,
   Clock,
+  Laptop,
+  Megaphone,
   PhoneCall,
-  Receipt,
   ShieldAlert,
+  Users,
 } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,47 +34,61 @@ interface Metric {
 
 const METRICS: Metric[] = [
   {
-    key: "pendingLeaves",
+    key: "pendingLeaveRequestCount",
     label: "Leave requests",
     caption: "waiting on a decision",
     icon: CalendarCheck,
     href: "/leaves",
   },
   {
-    key: "pendingExpenses",
-    label: "Expense claims",
-    caption: "waiting on review",
-    icon: Receipt,
-    href: "/expenses",
-  },
-  {
-    key: "openIncidents",
+    key: "openIncidentCount",
     label: "Open incidents",
     caption: "not yet resolved",
     icon: ShieldAlert,
     href: "/incidents",
   },
   {
-    key: "criticalIncidents",
-    label: "Critical incidents",
-    caption: "need attention now",
+    key: "slaBreachedIncidentCount",
+    label: "SLA breached",
+    caption: "past their deadline",
     icon: AlertTriangle,
     href: "/incidents",
     attention: true,
   },
   {
-    key: "onCallCount",
+    key: "currentlyOnCallCount",
     label: "On call",
     caption: "covering right now",
     icon: PhoneCall,
     href: "/incidents/on-call",
   },
   {
-    key: "todayCheckIns",
-    label: "Checked in",
-    caption: "so far today",
+    key: "currentlyOnDutyCount",
+    label: "On duty",
+    caption: "working right now",
     icon: Clock,
-    href: "/attendance",
+    href: "/scheduling",
+  },
+  {
+    key: "activeEmployeeCount",
+    label: "Active employees",
+    caption: "on the books",
+    icon: Users,
+    href: "/employees",
+  },
+  {
+    key: "assetsInMaintenanceCount",
+    label: "Assets in maintenance",
+    caption: "not available to assign",
+    icon: Laptop,
+    href: "/assets",
+  },
+  {
+    key: "activeAnnouncementCount",
+    label: "Announcements",
+    caption: "currently running",
+    icon: Megaphone,
+    href: "/announcements",
   },
 ];
 
@@ -167,9 +183,10 @@ function PulseTile({
  * number colour together. Red alone would be invisible to anyone who cannot
  * distinguish it, and would compete with the green brand accent besides.
  *
- * `prefetch={false}` because most of these routes are still empty files. Next
- * prefetches links in the viewport by default, which would fire requests for
- * pages that cannot render. Remove it per link as each page lands.
+ * `prefetch={false}` because eight tiles are eight in-viewport links, and Next
+ * prefetches those by default — eight route payloads fetched on every dashboard
+ * load for pages most visitors will not open. The tiles are one tap from their
+ * destination either way.
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -191,7 +208,7 @@ export function PulseGrid() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {METRICS.map((metric) => (
         <PulseTile
           key={metric.key}
