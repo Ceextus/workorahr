@@ -74,7 +74,23 @@ export function formatDateTime(value: string | null | undefined): string | null 
  * gets the decimal separator right — all things that quietly differ between
  * users and all things that look like bugs when wrong.
  *
- * Passing `undefined` as the locale means "use the reader's", which is why every
- * one of these is called from a Client Component. Formatted on the server they
- * would use the server's locale instead.
+ * Passing `undefined` as the locale means "use the reader's".
+ *
+ * A NOTE THAT USED TO BE WRONG, AND IS A REAL HYDRATION HAZARD
+ *
+ * This comment previously claimed the server locale was not a concern "because
+ * every one of these is called from a Client Component". That is false. A
+ * Client Component still renders on the server to produce the initial HTML —
+ * "client" describes where it hydrates and becomes interactive, not where it
+ * first runs.
+ *
+ * So each of these formats twice: once on the server, with the server's locale
+ * and timezone, and once in the browser, with the reader's. When the two differ
+ * — a Netlify function in UTC/en-US against a browser in Lagos — the markup
+ * does not match and React reports a hydration mismatch (minified error #418).
+ *
+ * The fix is to render these only after mount, or to pin an explicit locale and
+ * timezone so both passes agree. Pinning is the smaller change and the more
+ * predictable result; "the reader's locale" is a nicety that is not worth a
+ * mismatch on every screen showing a date.
  */
