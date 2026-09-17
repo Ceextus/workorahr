@@ -3,6 +3,7 @@
 import { CalendarPlus, CalendarX2, X } from "lucide-react";
 import { useState } from "react";
 
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
 import {
   LeaveStatusChip,
@@ -30,19 +31,22 @@ export function MyLeaves() {
   const cancel = useCancelLeave();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   // Newest first — the API promises no order.
   const leaves = [...(data ?? [])].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
-  async function handleCancel(id: string) {
-    if (!confirm("Cancel this leave request?")) return;
+  async function handleCancel() {
+    if (!confirmingId) return;
     setCancelError(null);
     try {
-      await cancel.mutateAsync(id);
+      await cancel.mutateAsync(confirmingId);
     } catch (cause) {
       setCancelError(cause instanceof Error ? cause.message : "Could not cancel it.");
+    } finally {
+      setConfirmingId(null);
     }
   }
 
@@ -121,7 +125,7 @@ export function MyLeaves() {
                   {leave.status === "PENDING" ? (
                     <button
                       type="button"
-                      onClick={() => handleCancel(leave.id)}
+                      onClick={() => setConfirmingId(leave.id)}
                       disabled={cancel.isPending}
                       aria-label="Cancel this request"
                       className="grid h-11 w-11 place-items-center rounded-field lg:h-9 lg:w-9 bg-surface-sunk text-text-muted transition-colors hover:text-error disabled:opacity-50"
@@ -137,6 +141,18 @@ export function MyLeaves() {
       </div>
 
       <SubmitLeaveDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+
+      <ConfirmDialog
+        open={confirmingId !== null}
+        onCancel={() => setConfirmingId(null)}
+        onConfirm={handleCancel}
+        title="Cancel this leave request?"
+        description="It will be withdrawn and cannot be reinstated — you would need to submit a new request."
+        confirmLabel="Cancel request"
+        cancelLabel="Keep it"
+        pendingLabel="Cancelling…"
+        isPending={cancel.isPending}
+      />
     </div>
   );
 }

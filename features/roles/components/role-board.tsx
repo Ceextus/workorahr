@@ -3,6 +3,7 @@
 import { Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { useState } from "react";
 
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
 import { RoleFormDrawer } from "@/features/roles/components/role-form-drawer";
 import { useDeleteRole, useRoles } from "@/features/roles/hooks";
@@ -28,6 +29,7 @@ export function RoleBoard({ canManage }: { canManage: boolean }) {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<RoleRecord | null>(null);
+  const [confirming, setConfirming] = useState<RoleRecord | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function openCreate() {
@@ -35,22 +37,20 @@ export function RoleBoard({ canManage }: { canManage: boolean }) {
     setDrawerOpen(true);
   }
 
-  async function handleDelete(role: RoleRecord) {
-    if (
-      !confirm(
-        `Delete the "${role.name}" role? Employees holding it may block this.`,
-      )
-    ) {
-      return;
-    }
+  async function handleDelete() {
+    if (!confirming) return;
+    const role = confirming;
 
     setDeleteError(null);
     try {
       await remove.mutateAsync(role.id);
+      setConfirming(null);
     } catch (cause) {
       const message =
         cause instanceof ApiError ? cause.message : "Could not delete that role.";
       setDeleteError(`${role.name}: ${message}`);
+      // Close the dialog so the error below is not hidden behind it.
+      setConfirming(null);
     }
   }
 
@@ -143,7 +143,7 @@ export function RoleBoard({ canManage }: { canManage: boolean }) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleDelete(role)}
+                      onClick={() => setConfirming(role)}
                       disabled={remove.isPending}
                       aria-label={`Delete ${role.name}`}
                       className="grid h-11 w-11 place-items-center rounded-field lg:h-9 lg:w-9 bg-error/10 text-error transition-colors hover:bg-error/20 disabled:opacity-50"
@@ -169,6 +169,17 @@ export function RoleBoard({ canManage }: { canManage: boolean }) {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         role={editing}
+      />
+
+      <ConfirmDialog
+        open={confirming !== null}
+        onCancel={() => setConfirming(null)}
+        onConfirm={handleDelete}
+        title={`Delete the "${confirming?.name ?? ""}" role?`}
+        description="Employees currently holding this role may prevent it from being deleted. This cannot be undone."
+        confirmLabel="Delete role"
+        pendingLabel="Deleting…"
+        isPending={remove.isPending}
       />
     </div>
   );

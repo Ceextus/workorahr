@@ -17,6 +17,7 @@ import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 
 import { Avatar } from "@/components/ui/avatar";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton, SkeletonCircle, SkeletonText } from "@/components/ui/skeleton";
 import { EditEmployeeDrawer } from "@/features/employees/components/edit-employee-drawer";
 import { ProfilePictureUpload } from "@/features/employees/components/profile-picture-upload";
@@ -335,6 +336,7 @@ function SideCard({
 
 function ManageActions({ employee }: { employee: Employee }) {
   const [editOpen, setEditOpen] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const deactivate = useDeactivateEmployee();
   const reactivate = useReactivateEmployee();
   const pending = deactivate.isPending || reactivate.isPending;
@@ -355,15 +357,7 @@ function ManageActions({ employee }: { employee: Employee }) {
         <button
           type="button"
           disabled={pending}
-          onClick={() => {
-            if (
-              confirm(
-                `Deactivate ${employee.firstName} ${employee.lastName}? Their login will be locked.`,
-              )
-            ) {
-              deactivate.mutate(employee.id);
-            }
-          }}
+          onClick={() => setConfirming(true)}
           className="inline-flex h-11 items-center justify-center gap-2 rounded-field bg-error/10 px-5 text-body-md font-semibold text-error transition-colors hover:bg-error/20 disabled:opacity-50"
         >
           <Power size={16} aria-hidden />
@@ -391,6 +385,23 @@ function ManageActions({ employee }: { employee: Employee }) {
         open={editOpen}
         onClose={() => setEditOpen(false)}
         employee={employee}
+      />
+
+      <ConfirmDialog
+        open={confirming}
+        onCancel={() => setConfirming(false)}
+        onConfirm={async () => {
+          try {
+            await deactivate.mutateAsync(employee.id);
+          } finally {
+            setConfirming(false);
+          }
+        }}
+        title={`Deactivate ${employee.firstName} ${employee.lastName}?`}
+        description="Their login is locked immediately. The record is kept, and they can be reactivated later."
+        confirmLabel="Deactivate"
+        pendingLabel="Deactivating…"
+        isPending={deactivate.isPending}
       />
     </div>
   );

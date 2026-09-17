@@ -160,16 +160,16 @@ export function RunPayrollDrawer({
 }
 
 /*
- * WHY A CHECKBOX RATHER THAN A `confirm()`
+ * WHY A CHECKBOX RATHER THAN A CONFIRM DIALOG
  *
- * Everywhere else in this app a destructive action uses `confirm()`, which is
- * fine for deactivating one employee. This is different in kind: one click
- * writes a row for every active employee, and nothing in the API can undo it.
+ * Destructive actions elsewhere open <ConfirmDialog>, which suits deactivating
+ * one employee. This is different in kind: one click writes a row for every
+ * active employee, and nothing in the API can undo it.
  *
- * A checkbox forces the confirmation to be deliberate and, unlike a browser
- * prompt, can state exactly what is about to happen. It also resets whenever the
- * period changes — a confirmation given for September must not carry over to a
- * date the user then edited.
+ * An inline checkbox makes the confirmation part of the form rather than an
+ * interruption after it, so the period and the consent are visible together. It
+ * also resets whenever the period changes — a confirmation given for September
+ * must not carry over to a date the user then edited.
  *
  * THE DUPLICATE WARNING IS THE USEFUL PART
  *

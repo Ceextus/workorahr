@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { ChevronsUpDown, Eye, Power, RotateCcw, Users } from "lucide-react";
 
 import { Avatar } from "@/components/ui/avatar";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton, SkeletonCircle, SkeletonText } from "@/components/ui/skeleton";
 import {
   useDeactivateEmployee,
@@ -131,7 +133,15 @@ function TableSkeleton({ rows = 8 }: { rows?: number }) {
 // BLOCK 4 · Row actions
 // ─────────────────────────────────────────────────────────────────────────────
 
-function RowActions({ employee, canManage }: { employee: Employee; canManage: boolean }) {
+function RowActions({
+  employee,
+  canManage,
+  onConfirmDeactivate,
+}: {
+  employee: Employee;
+  canManage: boolean;
+  onConfirmDeactivate: (employee: Employee) => void;
+}) {
   const deactivate = useDeactivateEmployee();
   const reactivate = useReactivateEmployee();
   const isPending = deactivate.isPending || reactivate.isPending;
@@ -151,12 +161,7 @@ function RowActions({ employee, canManage }: { employee: Employee; canManage: bo
           <button
             type="button"
             disabled={isPending}
-            onClick={() => {
-              // Irreversible-feeling and one click away — worth a confirm.
-              if (confirm(`Deactivate ${employee.firstName} ${employee.lastName}? They will not be able to log in.`)) {
-                deactivate.mutate(employee.id);
-              }
-            }}
+            onClick={() => onConfirmDeactivate(employee)}
             aria-label={`Deactivate ${employee.firstName} ${employee.lastName}`}
             className="grid h-11 w-11 place-items-center rounded-field lg:h-9 lg:w-9 bg-error/10 text-error transition-colors hover:bg-error/20 disabled:opacity-50"
           >
@@ -184,9 +189,9 @@ function RowActions({ employee, canManage }: { employee: Employee; canManage: bo
  * behind it. DELETE /employees/{id} is a *deactivation*, which is the button
  * already here. A second one promising real deletion would be lying.
  *
- * `confirm()` is a placeholder. It is blocking, unstyled, and cannot be themed —
- * but it is honest about the weight of the action, and a proper confirm dialog
- * is its own component. Better a plain prompt now than a one-click deactivate.
+ * Deactivation is confirmed through <ConfirmDialog>, which lives at the table
+ * level rather than inside RowActions — one dialog for the whole table instead
+ * of one mounted per row. The row only reports which employee was chosen.
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -216,6 +221,18 @@ export function EmployeeTable({
   onClearFilters,
   departmentById,
 }: EmployeeTableProps) {
+  const [confirming, setConfirming] = useState<Employee | null>(null);
+  const deactivate = useDeactivateEmployee();
+
+  async function confirmDeactivate() {
+    if (!confirming) return;
+    try {
+      await deactivate.mutateAsync(confirming.id);
+    } finally {
+      setConfirming(null);
+    }
+  }
+
   if (error) {
     return (
       <div className="rounded-card bg-error/8 p-8 text-center ring-1 ring-error/25">
@@ -301,7 +318,11 @@ export function EmployeeTable({
                       <StatusChip active={employee.active} />
                     </td>
                     <td className="px-4 py-4 lg:px-6">
-                      <RowActions employee={employee} canManage={canManage} />
+                      <RowActions
+                        employee={employee}
+                        canManage={canManage}
+                        onConfirmDeactivate={setConfirming}
+                      />
                     </td>
                   </tr>
                 );
@@ -335,6 +356,17 @@ export function EmployeeTable({
           ) : null}
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={confirming !== null}
+        onCancel={() => setConfirming(null)}
+        onConfirm={confirmDeactivate}
+        title={`Deactivate ${confirming?.firstName ?? ""} ${confirming?.lastName ?? ""}?`}
+        description="Their login is locked immediately. The record is kept, and they can be reactivated later."
+        confirmLabel="Deactivate"
+        pendingLabel="Deactivating…"
+        isPending={deactivate.isPending}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { Building2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
 import { DepartmentFormDrawer } from "@/features/departments/components/department-form-drawer";
 import { useDeleteDepartment, useDepartments } from "@/features/departments/hooks";
@@ -36,6 +37,7 @@ export function DepartmentBoard({ canManage }: { canManage: boolean }) {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<Department | null>(null);
+  const [confirming, setConfirming] = useState<Department | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function openCreate() {
@@ -48,14 +50,9 @@ export function DepartmentBoard({ canManage }: { canManage: boolean }) {
     setDrawerOpen(true);
   }
 
-  async function handleDelete(department: Department) {
-    if (
-      !confirm(
-        `Delete "${department.name}"? Employees assigned to it may block this.`,
-      )
-    ) {
-      return;
-    }
+  async function handleDelete() {
+    if (!confirming) return;
+    const department = confirming;
 
     setDeleteError(null);
     try {
@@ -67,6 +64,8 @@ export function DepartmentBoard({ canManage }: { canManage: boolean }) {
           ? cause.message
           : "Could not delete that department.";
       setDeleteError(`${department.name}: ${message}`);
+    } finally {
+      setConfirming(null);
     }
   }
 
@@ -160,7 +159,7 @@ export function DepartmentBoard({ canManage }: { canManage: boolean }) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleDelete(department)}
+                      onClick={() => setConfirming(department)}
                       disabled={remove.isPending}
                       aria-label={`Delete ${department.name}`}
                       className="grid h-11 w-11 place-items-center rounded-field lg:h-9 lg:w-9 bg-error/10 text-error transition-colors hover:bg-error/20 disabled:opacity-50"
@@ -188,6 +187,17 @@ export function DepartmentBoard({ canManage }: { canManage: boolean }) {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         department={editing}
+      />
+
+      <ConfirmDialog
+        open={confirming !== null}
+        onCancel={() => setConfirming(null)}
+        onConfirm={handleDelete}
+        title={`Delete "${confirming?.name ?? ""}"?`}
+        description="Employees assigned to this department may prevent it from being deleted. This cannot be undone."
+        confirmLabel="Delete department"
+        pendingLabel="Deleting…"
+        isPending={remove.isPending}
       />
     </div>
   );
