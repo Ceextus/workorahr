@@ -42,8 +42,9 @@ const STRIPPED_REQUEST_HEADERS = new Set([
   "transfer-encoding",
   "upgrade",
   "content-length",
+  "origin",
+  "referer",
 ]);
-
 const STRIPPED_RESPONSE_HEADERS = new Set([
   "connection",
   "keep-alive",

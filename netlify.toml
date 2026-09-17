@@ -1,5 +1,50 @@
-[[redirects]]
-  from = "/api/*"
-  to = "https://api-workora.codewithsixtus.com.ng/api/v1/:splat"
-  status = 200
-  force = true
+# ─────────────────────────────────────────────────────────────────────────────
+# DO NOT ADD A REDIRECT FOR /api/*
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# This file used to contain one:
+#
+#   [[redirects]]
+#     from = "/api/*"
+#     to = "https://api-workora.codewithsixtus.com.ng/api/v1/:splat"
+#     status = 200
+#     force = true
+#
+# It looks like exactly what the app needs and it breaks production in two ways.
+#
+# `force = true` makes Netlify intercept /api/* at the edge, so the Next.js
+# route handler at app/api/[...proxy]/route.ts never runs. Everything that
+# handler does is skipped:
+#
+# 1 · IT STRIPS THE `Origin` HEADER.
+#
+#     Netlify's own proxy forwards Origin: https://workorahr.netlify.app to the
+#     backend. Spring Security's CORS filter checks it against its allowed list,
+#     does not find it, and answers 403 Forbidden before the login controller is
+#     ever reached. Locally the header is http://localhost:3000, which IS on the
+#     list — which is why this only breaks once deployed.
+#
+#     Verified: the same POST returns 401 with no Origin, 401 with the localhost
+#     Origin, and 403 with the Netlify one.
+#
+# 2 · IT REWRITES `Set-Cookie`.
+#
+#     The backend sets the auth cookies with Domain=api-workora.codewithsixtus.com.ng.
+#     A browser will not store a cookie whose Domain does not match the site it
+#     is on, so with the raw redirect, login would appear to succeed and no
+#     session would ever be kept. The route handler strips that Domain attribute
+#     so the cookie belongs to whatever origin the app is served from.
+#
+#     This one would have survived a CORS fix and been far harder to diagnose —
+#     a login that returns 200 and then behaves as though you were never logged
+#     in.
+#
+# The backend origin belongs in the API_BASE_URL environment variable, which the
+# route handler reads server-side. It has no NEXT_PUBLIC_ prefix, so it never
+# ships to the browser. Nothing about the backend's address should appear here.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Netlify detects Next.js and installs its runtime automatically, so no build
+# configuration is needed for SSR and route handlers to work. This file exists
+# only to carry the warning above.
